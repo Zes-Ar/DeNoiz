@@ -1,0 +1,30 @@
+# --- SIH26052 DeNoiz: keep the repo to code + docs only ---
+
+# Virtual environment (regenerate from requirements.txt)
+.venv/
+venv/
+env/
+
+# Dataset - ~10 GB of audio, never commit
+DATASET/
+
+# Generated outputs (baseline wavs, logs) - recreated by running the scripts
+out/
+
+# Python caches / build
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editor cruft
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Model cache (DeepFilterNet downloads its own weights to AppData, not here)
+*.ckpt
+*.onnx

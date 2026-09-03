@@ -1,0 +1,32 @@
+# SIH26052 - ANC for Defence Speech Communication
+# Internal demo round: inference only (no fine-tuning).
+#
+# IMPORTANT - Python 3.11 REQUIRED.
+#   DeepFilterLib ships Windows wheels only for cp38/39/310/311.
+#   On Python 3.12+/3.13 pip tries to build the Rust extension and fails.
+#   Create the venv with:  py -3.11 -m venv .venv
+#
+# IMPORTANT - torch/torchaudio are PINNED to 2.1.2.
+#   DeepFilterNet 0.5.6 imports torchaudio.backend.common.AudioMetaData,
+#   which was removed in torchaudio 2.2+. Newer versions break at import.
+#   Install these two from the CPU index:
+#     pip install torch==2.1.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cpu
+#   Then:
+#     pip install -r requirements.txt
+
+torch==2.1.2
+torchaudio==2.1.2
+
+deepfilternet==0.5.6
+
+numpy<2
+scipy
+soundfile
+
+# live pipeline (mic -> model -> headphones) + WebSocket to the UI
+sounddevice==0.4.7
+websockets
+
+# mock backend for the UI dev (fake data, same contract)
+fastapi>=0.110
+uvicorn>=0.27

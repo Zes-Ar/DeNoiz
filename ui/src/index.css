@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Sahara Design System — Tailwind v4 Theme Configuration
+   All tokens migrated from the old tailwind.config.js
+   ============================================================ */
+@theme {
+  /* ── Sahara Color Palette (Dark Theme) ── */
+  --color-surface: #121212;
+  --color-on-primary: #ffffff;
+  --color-on-primary-fixed-variant: #8a4518;
+  --color-secondary-fixed-dim: #cec6be;
+  --color-surface-variant: #2a2a2a;
+  --color-background: #121212;
+  --color-secondary-container: rgba(255, 255, 255, 0.1);
+  --color-surface-container-highest: #444444;
+  --color-on-tertiary-fixed-variant: #6e3030;
+  --color-on-secondary: #ffffff;
+  --color-on-background: #f0f0f0;
+  --color-secondary-fixed: #333333;
+  --color-on-surface: #f0f0f0;
+  --color-error-container: #4a1515;
+  --color-inverse-primary: #f0a878;
+  --color-on-error: #ffffff;
+  --color-on-secondary-container: #d0d0d0;
+  --color-inverse-surface: #f0f0f0;
+  --color-primary-fixed-dim: #f0a878;
+  --color-on-primary-container: #fbe8d8;
+  --color-outline: #666666;
+  --color-primary-container: #e08850;
+  --color-on-secondary-fixed: #d0d0d0;
+  --color-on-error-container: #ffb4a9;
+  --color-tertiary-fixed-dim: #e8a0a0;
+  --color-on-surface-variant: #b0b0b0;
+  --color-error: #ffb4a9;
+  --color-tertiary-fixed: #5c1818;
+  --color-primary: #c2652a;
+  --color-surface-dim: #1a1a1a;
+  --color-secondary: #aaaaaa;
+  --color-on-tertiary-container: #ffdad5;
+  --color-outline-variant: rgba(255, 255, 255, 0.15);
+  --color-surface-container-lowest: #0a0a0a;
+  --color-surface-container-high: #2a2a2a;
+  --color-on-tertiary-fixed: #ffdad5;
+  --color-inverse-on-surface: #121212;
+  --color-on-tertiary: #ffffff;
+  --color-surface-tint: #c2652a;
+  --color-surface-container-low: rgba(255, 255, 255, 0.05);
+  --color-on-secondary-fixed-variant: #b0b0b0;
+  --color-primary-fixed: #fbe8d8;
+  --color-surface-container: rgba(255, 255, 255, 0.08);
+  --color-surface-bright: #333333;
+  --color-tertiary-container: #d47070;
+  --color-tertiary: #8c3c3c;
+  --color-on-primary-fixed: #401a08;
+
+  /* Olive scale (Dark Theme adjusted) */
+  --color-olive-50: #121612;
+  --color-olive-100: #1a221a;
+  --color-olive-200: #2a3a2a;
+  --color-olive-500: #88c894;
+  --color-olive-600: #a3d9ac;
+  --color-olive-700: #c1e8c7;
+
+  /* Sienna scale (Dark Theme adjusted) */
+  --color-sienna-50: #18100a;
+  --color-sienna-100: #2a180f;
+  --color-sienna-500: #f0a878;
+  --color-sienna-600: #f4c09a;
+  --color-sienna-700: #f8d5bb;
+
+  /* ── Font Families ── */
+  --font-headline: "EB Garamond", serif;
+  --font-display: "EB Garamond", serif;
+  --font-body: "Manrope", sans-serif;
+  --font-label: "Manrope", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* ── Border Radii ── */
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.35rem;
+  --radius-full: 9999px;
+
+  /* ── Box Shadows ── */
+  --shadow-warm-card: 0 4px 20px -2px rgba(96, 72, 54, 0.05), 0 1px 3px 0 rgba(96, 72, 54, 0.04);
+  --shadow-warm-hover: 0 10px 28px -4px rgba(194, 101, 42, 0.12), 0 2px 6px 0 rgba(96, 72, 54, 0.05);
+  --shadow-warm-inner: inset 0 1px 3px rgba(58, 48, 42, 0.08);
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+/* Scale the whole UI up proportionally. Tailwind sizes are rem-based, so
+   enlarging the root font size makes all text + spacing bigger at once,
+   letting the layout fill the screen without changing the design. */
+html {
+  font-size: 20px;              /* base is 16px; 20px ≈ 1.25x everything */
+}
+@media (min-width: 1536px) {
+  html { font-size: 22px; }     /* a bit larger on big laptop/desktop screens */
+}
+
+body {
+  background-color: #121212;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/india_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.30; /* raised opacity to 30% */
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(at 10% 12%, rgba(194, 101, 42, 0.045) 0px, transparent 45%),
+    radial-gradient(at 88% 18%, rgba(224, 136, 80, 0.04) 0px, transparent 40%),
+    radial-gradient(at 45% 85%, rgba(79, 122, 85, 0.04) 0px, transparent 50%);
+  pointer-events: none;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-fill {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ============================================================
+   Custom Utilities
+   ============================================================ */
+
+/* Precision Technical Grid for Audio Display */
+@utility sahara-audio-grid {
+  background-size: 30px 30px;
+  background-image:
+    linear-gradient(to right, rgba(154, 144, 136, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(154, 144, 136, 0.12) 1px, transparent 1px);
+}
+
+/* Custom Range Slider — Sahara Terracotta style */
+@utility sahara-slider {
+  &::-webkit-slider-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 2px solid #c2652a;
+    box-shadow: 0 2px 6px rgba(194, 101, 42, 0.28);
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -6px;
+    transition: all 0.15s ease-in-out;
+  }
+  &::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 10px rgba(194, 101, 42, 0.4);
+  }
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background: #ece6dc;
+    border-radius: 9999px;
+  }
+  &::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 2px solid #c2652a;
+    box-shadow: 0 2px 6px rgba(194, 101, 42, 0.28);
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+  }
+  &::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    background: #ece6dc;
+    border-radius: 9999px;
+  }
+}

@@ -212,17 +212,23 @@ class AudioEngine:
         for _ in range(2):
             self._enhance_block(warm)
 
+        # Resolve device names to a single index (handles ambiguous names like
+        # "Headphones" matching several driver nodes). Prefers well-behaved
+        # host APIs (MME/WASAPI) over the format-picky WDM-KS.
+        out_dev = _resolve_device(sd, self.output_device, want_output=True)
+        in_dev = _resolve_device(sd, self.input_device, want_output=False)
+
         # open output stream (headphones) and input stream (mic), mono.
         try:
             self._out_stream = sd.OutputStream(
                 samplerate=SAMPLE_RATE, channels=1, dtype="float32",
-                device=self.output_device, blocksize=BLOCK_SAMPLES,
+                device=out_dev, blocksize=BLOCK_SAMPLES,
             )
             self._out_stream.start()
 
             self._in_stream = sd.InputStream(
                 samplerate=SAMPLE_RATE, channels=1, dtype="float32",
-                device=self.input_device, blocksize=BLOCK_SAMPLES,
+                device=in_dev, blocksize=BLOCK_SAMPLES,
                 callback=self._input_callback,
             )
             self._in_stream.start()
@@ -230,7 +236,8 @@ class AudioEngine:
             print(f"\n!! AUDIO STREAM ERROR: {exc}", flush=True)
             print("   The mic or headphone device could not be opened at "
                   f"{SAMPLE_RATE} Hz mono.", flush=True)
-            print("   Run  --list  and pass --input / --output explicitly.", flush=True)
+            print("   Run  --list  and pass --input / --output explicitly "
+                  "(use the NUMBER, e.g. --output 3).", flush=True)
             return
 
         # report what actually got opened so device problems are obvious
@@ -405,6 +412,56 @@ async def serve(state: EngineState, engine: AudioEngine) -> None:
 
 
 # ----------------------------------------------------------------- helpers
+
+# host APIs ranked by how reliably they open 48 kHz mono streams on Windows.
+# MME and WASAPI are well-behaved; WDM-KS is picky about exact formats.
+_HOSTAPI_PREFERENCE = ["MME", "Windows WASAPI", "Windows DirectSound", "Windows WDM-KS"]
+
+
+def _resolve_device(sd, dev, want_output: bool):
+    """
+    Turn a device selector into a single device index.
+
+    - None            -> None (use system default)
+    - int             -> used as-is
+    - str (name part) -> find matching devices of the right direction and pick
+                         ONE, preferring MME/WASAPI over WDM-KS. Never errors on
+                         an ambiguous name; picks the most compatible match.
+    """
+    if dev is None or isinstance(dev, int):
+        return dev
+
+    name = str(dev).lower()
+    devices = sd.query_devices()
+    hostapis = sd.query_hostapis()
+
+    matches = []
+    for idx, d in enumerate(devices):
+        if name not in d["name"].lower():
+            continue
+        chans = d["max_output_channels"] if want_output else d["max_input_channels"]
+        if chans < 1:
+            continue
+        api_name = hostapis[d["hostapi"]]["name"]
+        try:
+            rank = _HOSTAPI_PREFERENCE.index(api_name)
+        except ValueError:
+            rank = len(_HOSTAPI_PREFERENCE)
+        matches.append((rank, idx, d["name"], api_name))
+
+    if not matches:
+        # no name match; fall back to default so we don't crash
+        print(f"  (no {'output' if want_output else 'input'} device matched "
+              f"'{dev}', using system default)", flush=True)
+        return None
+
+    matches.sort()
+    _, idx, dname, api = matches[0]
+    if len(matches) > 1:
+        print(f"  ('{dev}' matched {len(matches)} devices; picking "
+              f"[{idx}] {dname} via {api})", flush=True)
+    return idx
+
 
 def list_devices() -> None:
     import sounddevice as sd

@@ -10,6 +10,7 @@ DATASET/
 
 # Generated outputs (baseline wavs, logs) - recreated by running the scripts
 out/
+*.log
 
 # Python caches / build
 __pycache__/

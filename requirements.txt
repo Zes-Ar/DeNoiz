@@ -1,5 +1,5 @@
 # SIH26052 - ANC for Defence Speech Communication
-# Internal demo round: inference only (no fine-tuning).
+# Final round: real-time inference with fine-tuned DeepFilterNet model.
 #
 # IMPORTANT - Python 3.11 REQUIRED.
 #   DeepFilterLib ships Windows wheels only for cp38/39/310/311.

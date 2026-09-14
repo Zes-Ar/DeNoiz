@@ -1,5 +1,5 @@
 """
-SIH26052 - Live audio engine (internal round, pretrained model only).
+SIH26052 - Live audio engine (Final Round - fine-tuned DeepFilterNet model).
 
     mic  ->  DeepFilterNet3 (100 ms blocks)  ->  headphones
 
@@ -34,15 +34,23 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import queue
 import sys
 import threading
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 
 # ------------------------------------------------------------------ constants
+
+# Fine-tuned model (DeepFilterNet3 fine-tuned on helicopter noise). This is a
+# self-contained model base dir with `config.ini` + `checkpoints/*.ckpt.best`,
+# copied out of the WSL training run. The engine loads THIS by default, not the
+# stock pretrained DeepFilterNet3 from the library cache.
+DEFAULT_MODEL_DIR = str(Path(__file__).resolve().parent.parent / "models" / "DeepFilterNet3_heli")
 
 SAMPLE_RATE = 48_000          # DeepFilterNet3 operates at 48 kHz
 BLOCK_MS = 100                # processing block size (settled by block_size_sweep)
@@ -143,10 +151,12 @@ class AudioEngine:
     display data straight off EngineState.
     """
 
-    def __init__(self, state: EngineState, input_device=None, output_device=None):
+    def __init__(self, state: EngineState, input_device=None, output_device=None,
+                 model_dir: str = DEFAULT_MODEL_DIR):
         self.state = state
         self.input_device = input_device
         self.output_device = output_device
+        self.model_dir = model_dir
 
         self._in_q: "queue.Queue[np.ndarray]" = queue.Queue(maxsize=32)
         self._worker: threading.Thread | None = None
@@ -164,9 +174,17 @@ class AudioEngine:
     def load_model(self) -> None:
         if self.model is not None:
             return
-        print("Loading pretrained DeepFilterNet3 ...", flush=True)
         from df.enhance import enhance, init_df
-        model, df_state, _ = init_df(config_allow_defaults=True)
+
+        model_dir = self.model_dir
+        if not os.path.isdir(model_dir):
+            raise FileNotFoundError(
+                f"Fine-tuned model directory not found: {model_dir}\n"
+                f"   Expected a DeepFilterNet base dir with config.ini and "
+                f"checkpoints/*.ckpt.best inside it."
+            )
+        print(f"Loading fine-tuned DeepFilterNet3 from {model_dir} ...", flush=True)
+        model, df_state, _ = init_df(model_dir, config_allow_defaults=True)
         self.model, self.df_state, self.enhance = model, df_state, enhance
         sr = df_state.sr()
         if sr != SAMPLE_RATE:
@@ -512,6 +530,9 @@ def main() -> None:
     ap.add_argument("--output", default=None, help="output device index or name (headphones)")
     ap.add_argument("--self-test", action="store_true",
                     help="3 s mic->headphones test, no WebSocket")
+    ap.add_argument("--model", default=DEFAULT_MODEL_DIR,
+                    help="DeepFilterNet model base dir (config.ini + checkpoints/). "
+                         "Defaults to the fine-tuned helicopter model.")
     args = ap.parse_args()
 
     if args.list:
@@ -527,7 +548,8 @@ def main() -> None:
             return v  # name substring; sounddevice resolves it
 
     state = EngineState()
-    engine = AudioEngine(state, parse_dev(args.input), parse_dev(args.output))
+    engine = AudioEngine(state, parse_dev(args.input), parse_dev(args.output),
+                         model_dir=args.model)
 
     if args.self_test:
         self_test(engine)
